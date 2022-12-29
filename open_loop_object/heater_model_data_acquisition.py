@@ -1,4 +1,5 @@
 import serial #pip install pyserial
+import serial.tools.list_ports
 import numpy as np
 from time import sleep
 import time
@@ -6,8 +7,20 @@ import json
 import matplotlib.pyplot as plt
 import keyboard #pip install keyboard
 
-plt.ion()
-hSerial = serial.Serial('COM11', 115200, timeout=1, parity=serial.PARITY_NONE) 
+#check which port is in use:
+ports = serial.tools.list_ports.comports()
+serialInst = serial.Serial()
+portList = []
+
+for onePort in ports:
+    portList.append(str(onePort))
+    print(str(onePort))
+
+
+
+plt.ion() #open interactive plot
+#configure serial port (com#, baudrate, dt, parity):
+hSerial = serial.Serial('COM11', 115200, timeout=1, parity=serial.PARITY_NONE)
 hSerial.write(b'print_on;')
 sleep(0.5)
 set_point = 26;
@@ -18,13 +31,14 @@ sleep(0.5)
 hSerial.write(b'select_controller=1;')
 sleep(0.5)
 
+#create a file
 timestr = time.strftime("%Y%m%d-%H%M%S")
 hFile = open("data_open_loop_object%s.txt" % (timestr), "a")
 
 hSerial.reset_input_buffer()
 hSerial.flush()
-temperature_samples = [];
-t = [];
+temperature_samples = []
+t = []
 t_value=0;
 while True:
     text = hSerial.readline()
@@ -40,9 +54,10 @@ while True:
         hSerial.reset_input_buffer()
     print(temperature)
     hFile.write("%.2f," % temperature)
-    temperature_samples.append(temperature);
-    t.append(t_value);
+    temperature_samples.append(temperature)
+    t.append(t_value)
     t_value = t_value + 1
+
     # Plot results
     plt.clf()
     plt.plot(t,temperature_samples, '.', markersize=5);
