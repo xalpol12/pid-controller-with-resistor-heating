@@ -23,7 +23,7 @@ plt.ion() #open interactive plot
 hSerial = serial.Serial('COM11', 115200, timeout=1, parity=serial.PARITY_NONE)
 hSerial.write(b'print_on;')
 sleep(0.5)
-set_point = 26;
+set_point = 26
 hSerial.write(b'set_point=26;')
 sleep(0.5)
 hSerial.write(b'freq=1;')
@@ -39,7 +39,7 @@ hSerial.reset_input_buffer()
 hSerial.flush()
 temperature_samples = []
 t = []
-t_value=0;
+t_value=0
 while True:
     text = hSerial.readline()
     temperature = 0
