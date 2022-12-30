@@ -61,7 +61,7 @@ while True:
     # Plot results
     plt.clf()
     plt.plot(t,temperature_samples, '.', markersize=5);
-    plt.title("BMP280 logger, STM32 (controller sp=%d C). (author: D. Łuczak)" % set_point)
+    plt.title("BMP280 logger, STM32 (controller sp=%d C)" % set_point)
     plt.xlabel("Time (s)")
     plt.ylabel("Temperature (C)")
     plt.show()
