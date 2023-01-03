@@ -72,6 +72,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 float temperature;
 float pressure;
+char text[100] = "";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -134,10 +135,13 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
 	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-	  sprintf((char*)text, "%.2f, ", temperature);
+//	  sprintf((char*)text, "%.2f, ", temperature);
+	  snprintf(text, sizeof(text), "{\"temperature\":\"%.2f\"}\n", temperature);
 	  HAL_UART_Transmit(&huart3, (uint8_t*)text, strlen(text), 1000);
+	  text[0] = 0;
 	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */

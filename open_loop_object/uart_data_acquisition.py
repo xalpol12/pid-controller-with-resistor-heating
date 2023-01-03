@@ -17,10 +17,11 @@ for onePort in ports:
     print(str(onePort))
 
 
-
+plt.figure()
 plt.ion() #open interactive plot
+plt.show()
 #configure serial port (com#, baudrate, dt, parity):
-hSerial = serial.Serial('COM11', 115200, timeout=1, parity=serial.PARITY_NONE)
+hSerial = serial.Serial('COM3', 115200, timeout=1, parity=serial.PARITY_NONE)
 hSerial.write(b'print_on;')
 sleep(0.5)
 set_point = 26
@@ -42,6 +43,7 @@ t = []
 t_value=0
 while True:
     text = hSerial.readline()
+    print("Text: ", text)
     temperature = 0
     sample = 0
     try:
@@ -53,7 +55,7 @@ while True:
         hSerial.flush()
         hSerial.reset_input_buffer()
     print(temperature)
-    hFile.write("%.2f," % temperature)
+    hFile.write("%.2f," % float(temperature))
     temperature_samples.append(temperature)
     t.append(t_value)
     t_value = t_value + 1
@@ -64,7 +66,6 @@ while True:
     plt.title("BMP280 logger, STM32 (controller sp=%d C)" % set_point)
     plt.xlabel("Time (s)")
     plt.ylabel("Temperature (C)")
-    plt.show()
     plt.pause(0.0001)
     if keyboard.is_pressed("q"):
         break  # finishing the loop
