@@ -9,7 +9,7 @@ import keyboard #pip install keyboard
 
 #check which port is in use:
 ports = serial.tools.list_ports.comports()
-serialInst = serial.Serial()
+serialInst = serial.Serial() #comment
 portList = []
 
 for onePort in ports:
