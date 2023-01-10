@@ -61,6 +61,7 @@ while True:
     plt.title("BMP280 logger, STM32 (controller sp=%d C). (author: D. Łuczak)" % set_point)
     plt.xlabel("Time (s)")
     plt.ylabel("Temperature (C)")
+    plt.grid()
     plt.show()
     plt.pause(0.0001)
     if keyboard.is_pressed("q"):
