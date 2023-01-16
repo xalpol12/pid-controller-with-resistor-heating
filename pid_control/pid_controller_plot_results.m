@@ -3,7 +3,7 @@ temperature = load(data_filename);
 dt = 1;
 number_of_samples = length(temperature);
 t = (0:number_of_samples-1)*dt;
-set_point = 26;
+set_point = 27.5;
 
 figure(1);
 plot(t,temperature, 'b.');

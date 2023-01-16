@@ -1,6 +1,6 @@
 clc; clear all; close all;
 
-data_filename = '';
+data_filename = 'data_two_position_controller_20230110-155751.txt';
 temperature = load(data_filename);
 dt = 1; %sample time
 samples = length(temperature);
@@ -12,14 +12,14 @@ input = input_amplitude*ones(1, samples);
 
 %LTI model
 s = tf('s');
-k = 8.65/input_amplitude; %model gain -> modify
-T = 300; %model time constant -> modify
+k = 11/input_amplitude; %model gain -> modify
+T = 250; %model time constant -> modify
 delay = 10; %model delay -> modify
 H = k/(1+s*T)*exp(-s*delay); %model
 fprintf('Model parameters k=%.2g, T=%g, delay=%g\n', k, T, delay);
 
 %Model response
-system_offset = 22.95;
+system_offset = 27.69;
 model_response = lsim(H,input,t);
 model_response = model_response + system_offset; %add offset
 

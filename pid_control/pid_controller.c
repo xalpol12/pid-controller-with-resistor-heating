@@ -51,7 +51,7 @@ float32_t calculate_discrete_pid(pid_t* pid, float32_t setpoint, float32_t measu
 int main() {
 	uint16_t number_of_samples=1000;
 	float32_t dt=1, setpoint=26.0, measured=0, pid_output;
-    pid_t pid1 = { .p.Kp=0.93, .p.Ki=0.0039, .p.Kd=0, .p.dt=dt, .previous_error=0, .previous_integral=0};
+    pid_t pid1 = { .p.Kp=0.607338773069937, .p.Ki=0.00245637321622817, .p.Kd=0, .p.dt=dt, .previous_error=0, .previous_integral=0};
     
     while(number_of_samples--)
     {
