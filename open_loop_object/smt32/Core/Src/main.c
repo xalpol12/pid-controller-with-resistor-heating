@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
+#include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -74,9 +75,20 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 float temperature;
 float pressure;
 char text[100] = "";
-float desired_temperature = 27.5;
-int pwm_duty = 900;
+uint8_t key[4] = "";
+float desired_temperature = 0.0;
+int pwm_duty = 0;
 float H = 0.3;
+float ut = 0.0;
+float et = 0.0;
+
+//pid params:
+float Kp = 0.607338773069937;
+float Ki = 0.00245637321622817;
+float Kd = 0;
+float dt = 1.f;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,7 +101,9 @@ static void MX_I2C1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
+uint32_t map(float x, float in_min, float in_max, uint32_t out_min, uint32_t out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -135,6 +149,7 @@ int main(void)
   HAL_TIM_PWM_Start (&htim3, TIM_CHANNEL_3);
   HAL_TIM_Base_Start_IT(&htim2);
   BMP280_Init(&hi2c1, BMP280_TEMPERATURE_16BIT, BMP280_STANDARD, BMP280_FORCEDMODE);
+  HAL_UART_Receive_IT(&huart3, key, 4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -510,22 +525,42 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	  desired_temperature = atof(key);
+	  HAL_UART_Receive_IT(&huart3, key, 4);
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-	  BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-	  snprintf(text, sizeof(text), "{\"temperature\":\"%.2f\"}\n", temperature);
-	  if(temperature > (desired_temperature + H/2))
-	  {
-		  pwm_duty = 0;
-		  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_duty);
-	  }
-	  if(temperature < (desired_temperature - H/2))
-	  {
-		  pwm_duty = 900;
-		  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_duty);
-	  }
-	  HAL_UART_Transmit(&huart3, (uint8_t*)text, strlen(text), 1000);
-	  text[0] = 0;
+    static float et_prev = 0.f;
+   	static float integral = 0.f;
+
+	BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
+	snprintf(text, sizeof(text), "{\"temperature\":\"%.2f\"}\n", temperature);
+	HAL_UART_Transmit(&huart3, (uint8_t*)text, strlen(text), 1000);
+	text[0] = 0;
+
+	// obl wartosci sterowania
+	et = desired_temperature- temperature;
+	integral += et;
+	ut = Ki*integral + Kp*et + Kd * (et - et_prev)/dt;
+
+	// ograniczenie sterowania
+	if(ut > 1)
+	{
+		ut = 1;
+	}
+	if(ut < 0)
+	{
+		ut = 0;
+	}
+	// przeliczenie wypelnienia na pulsy
+	pwm_duty = map(ut, 0.0, 1.0, 0, 1000);
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_duty);
+
+	// zapisanie aktualnej wartosci uchybu i sterowania
+	et_prev = et;
 }
 
 /* USER CODE END 4 */
