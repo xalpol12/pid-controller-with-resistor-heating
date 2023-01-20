@@ -1,6 +1,6 @@
 clc; clear all; close all;
 
-data_filename = 'data_two_position_controller_20230110-155751.txt';
+data_filename = 'open_loop_object_20230110-155751.txt';
 temperature = load(data_filename);
 dt = 1; %sample time
 samples = length(temperature);
