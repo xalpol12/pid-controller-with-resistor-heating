@@ -528,7 +528,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	  desired_temperature = 0.01 * atof(key);
+	  desired_temperature = atof(key);
 	  HAL_UART_Receive_IT(&huart3, key, 2);
 }
 
@@ -540,7 +540,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
 	//simple error calculations
 	error = desired_temperature - temperature;
-	integralError += error;
+	integralError += error + previous_error;
 	derivative = (error - previousError)/dt;
 	//PID calculations according to "wyklad 7"
 	P = Kp * error;
@@ -552,12 +552,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	if(uPid > 1.0)
 	{
 		uPid = 1.0;
-//		pwm_duty = 1000;
 	}
 	if(uPid < 0.0)
 	{
 		uPid = 0.0;
-//		pwm_duty = 0;
 	}
 	//u to DUTY conversion
 	float duty = uPid * 1000.0;
