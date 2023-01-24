@@ -72,15 +72,16 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-float temperature;
-float pressure;
-char text[100] = "";
-uint8_t key[4] = "";
-float desired_temperature = 0.0;
-int pwm_duty = 0;
+uint8_t key[2] = "";
 float H = 0.3;
-float ut = 0.0;
-float et = 0.0;
+char text[100] = "";
+float desired_temperature = 28;
+float temperature = 0;
+float pressure = 0;
+float error = 0;
+float previousError = 0;
+float integralError = 0;
+float pwm_duty;
 
 //pid params:
 float Kp = 0.607338773069937;
@@ -149,7 +150,7 @@ int main(void)
   HAL_TIM_PWM_Start (&htim3, TIM_CHANNEL_3);
   HAL_TIM_Base_Start_IT(&htim2);
   BMP280_Init(&hi2c1, BMP280_TEMPERATURE_16BIT, BMP280_STANDARD, BMP280_FORCEDMODE);
-  HAL_UART_Receive_IT(&huart3, key, 4);
+  HAL_UART_Receive_IT(&huart3, key, 2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -527,40 +528,49 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	  desired_temperature = atof(key);
-	  HAL_UART_Receive_IT(&huart3, key, 4);
+	  desired_temperature = 0.01 * atof(key);
+	  HAL_UART_Receive_IT(&huart3, key, 2);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-    static float et_prev = 0.f;
-   	static float integral = 0.f;
-
+	//declaration of temporary variables
+	float uPid = 0.0, derivative, P, I, D;
+	//measurment of object
 	BMP280_ReadTemperatureAndPressure(&temperature, &pressure);
-	snprintf(text, sizeof(text), "{\"temperature\":\"%.2f\"}\n", temperature);
+	//simple error calculations
+	error = desired_temperature - temperature;
+	integralError += error;
+	derivative = (error - previousError)/dt;
+	//PID calculations according to "wyklad 7"
+	P = Kp * error;
+	I = Ki * integralError*(dt/2.0);
+	D = Kd * derivative;
+	//u calculation
+	uPid = P + I + D;
+	//Saturation
+	if(uPid > 1.0)
+	{
+		uPid = 1.0;
+//		pwm_duty = 1000;
+	}
+	if(uPid < 0.0)
+	{
+		uPid = 0.0;
+//		pwm_duty = 0;
+	}
+	//u to DUTY conversion
+	float duty = uPid * 1000.0;
+	pwm_duty = (int) duty;
+//	pwm_duty = uPid * 1000;
+	//u output
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_duty);
+	//logging output
+	snprintf(text, sizeof(text), "{\"temperature\":%.2f,\"control\":%.2f,\"desired\":%.2f}\n", temperature, desired_temperature, pwm_duty);
 	HAL_UART_Transmit(&huart3, (uint8_t*)text, strlen(text), 1000);
 	text[0] = 0;
-
-	// obl wartosci sterowania
-	et = desired_temperature- temperature;
-	integral += et;
-	ut = Ki*integral + Kp*et + Kd * (et - et_prev)/dt;
-
-	// ograniczenie sterowania
-	if(ut > 1)
-	{
-		ut = 1;
-	}
-	if(ut < 0)
-	{
-		ut = 0;
-	}
-	// przeliczenie wypelnienia na pulsy
-	pwm_duty = map(ut, 0.0, 1.0, 0, 1000);
-	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_duty);
-
-	// zapisanie aktualnej wartosci uchybu i sterowania
-	et_prev = et;
+	//changing last
+	previousError = error;
 }
 
 /* USER CODE END 4 */

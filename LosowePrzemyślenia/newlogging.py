@@ -55,8 +55,8 @@ for onePort in ports:
     portList.append(str(onePort))
     print(str(onePort))
 
-hSerial = serial.Serial('COM4', 115200, timeout=1, parity=serial.PARITY_NONE)
-
+hSerial = serial.Serial('COM5', 115200, timeout=1, parity=serial.PARITY_NONE)
+time.sleep(2)
 
 thread = threading.Thread(target=terminalInput, args=(hSerial, ))
 thread.start()
@@ -76,6 +76,7 @@ control_samples = []
 desired_samples = []
 t = []
 t_value=time.time()
+t_value = 0
 
 
 firstRound = True
@@ -100,15 +101,17 @@ while True:
     temperature_samples.append(temperature);
     control_samples.append(control)
     desired_samples.append(desired)
-    if firstRound == True:
-        t.append(0)
-        firstRound = False
-    else:
-        t_value = time.time() - t_value
-        t.append(round(t_value, 1))
+    # if firstRound == True:
+    #     t.append(0)
+    #     firstRound = False
+    # else:
+    #     t_value = time.time() - t_value
+    #     t.append(round(t_value, 1))
+    t.append(t_value)
+    t_value += 1
     # Plot results
     dataPlot(temperature_samples, control_samples, desired_samples, t)
-    writer.writerow([temperature, desired, control])
+    # writer.writerow([temperature, desired, control])
     if keyboard.is_pressed("q"):
         break  # finishing the loop
 hSerial.close()
