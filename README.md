@@ -22,6 +22,10 @@ specific kp, ki and kd gains and implement the same circuit on physical object.
 - Python for connecting via serial port with microcontroller, logging and displaying measurements
 - Matlab with Simulink for plotting, creating theoretical model, selecting optimal PID parameters
 
+## Video
+[Working example](https://youtu.be/75X0-YC5bIA)
+
+
 ## Screenshots
 ![image](https://user-images.githubusercontent.com/74473601/214701602-ebe40de0-f3c5-4e6e-a957-33e021a9862c.png)
 ![pid_real_object](https://user-images.githubusercontent.com/74473601/214701912-200e0122-3b2f-41fc-8925-e5bfdd5a0aeb.png)
