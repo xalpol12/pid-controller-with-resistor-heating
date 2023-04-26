@@ -12,8 +12,8 @@
 
 ## General Information
 The main goal of this project is to identify the object in open loop, create a theoretical model, simulate a circuit in Simulink,
-create a two-position controller and implement it on physical object. Then create a theoretical PID simulation in Simulink with 
-specific kp, ki and kd gains and implement the same circuit on physical object.
+create a two-position controller and implement it using physical object. Then create a theoretical PID simulation in Simulink with 
+specific kp, ki, kd gains and implement the same circuit using physical object.
 
 
 ## Technologies Used
